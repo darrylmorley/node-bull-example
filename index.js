@@ -56,4 +56,18 @@ const jobs = [...new Array(10)].map(_ => ({
   toppings: ["lettuce", "tomato", "onion"],
 }));
 // specify retry options
-jobs.forEach(job => burgerQueue.add(job, {attempts: 3, backoff: 1000}));
+jobs.forEach((job, i) => burgerQueue.add(job, { jobId: `Burger#${i + 1}`, attempts: 3, backoff: 1000}));
+
+// add listeners
+burgerQueue.on("active", (job, jobPromise) => {
+  console.log(`Job ${job.id} has started`);
+});
+
+burgerQueue.on("completed", (job, result) => {
+  console.log(`Job ${job.id} has been completed`);
+});
+
+burgerQueue.on("failed", (job, result) => {
+  console.log(`Job ${job.id} has failed with error: ${result.message}`);
+});
+
