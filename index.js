@@ -1,3 +1,4 @@
+// Show progress of jobs in queue in bull ui
 import Bull from "bull";
 import dotenv from "dotenv";
 import {promisify} from "util";
