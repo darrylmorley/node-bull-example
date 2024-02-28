@@ -1,3 +1,5 @@
+// Use rate limiting to thorottle the number of jobs processed per second
+
 import Bull from "bull";
 import dotenv from "dotenv";
 import {promisify} from "util";
@@ -6,10 +8,17 @@ const sleep = promisify(setTimeout);
 dotenv.config();
 const {REDIS_HOST, REDIS_PORT, REDIS_PASSWORD} = process.env;
 
-const redisOptions = {redis: {host: REDIS_HOST, port: REDIS_PORT, password: REDIS_PASSWORD}};
+// queue options
+const queueOptions = {
+  redis: {host: REDIS_HOST, port: REDIS_PORT, password: REDIS_PASSWORD},
+  limit: {
+    max: 1,
+    duration: 1000,
+  }
+};
 
 // define queue
-const burgerQueue = new Bull("burger", redisOptions);
+const burgerQueue = new Bull("burger", queueOptions);
 
 // register processor
 burgerQueue.process(async (payload, done) => {
@@ -39,9 +48,10 @@ burgerQueue.process(async (payload, done) => {
 });
 
 // add job to the queue
-burgerQueue.add({
+const jobs = [...new Array(10)].map(_ => ({
   bun: "sesame",
   patty: "beef",
   cheese: "cheddar",
   toppings: ["lettuce", "tomato", "onion"],
-});
+}));
+jobs.forEach(job => burgerQueue.add(job));
