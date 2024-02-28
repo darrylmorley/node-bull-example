@@ -49,25 +49,19 @@ burgerQueue.process(async (payload, done) => {
 });
 
 // add job to the queue
-const jobs = [...new Array(10)].map(_ => ({
+const jobs = [...new Array(1)].map(_ => ({
   bun: "sesame",
   patty: "beef",
   cheese: "cheddar",
   toppings: ["lettuce", "tomato", "onion"],
 }));
-// specify retry options
-jobs.forEach((job, i) => burgerQueue.add(job, { jobId: `Burger#${i + 1}`, attempts: 3, backoff: 1000}));
 
-// add listeners
-burgerQueue.on("active", (job, jobPromise) => {
-  console.log(`Job ${job.id} has started`);
-});
+jobs.forEach((job, i) => burgerQueue.add(job, { 
+  jobId: `Burger#${i + 1}`, 
+  attempts: 3, 
+  backoff: 1000,
+  // Repeat as a cron job
+  repeat: {cron: "10 * * * * *"}
+}));
 
-burgerQueue.on("completed", (job, result) => {
-  console.log(`Job ${job.id} has been completed`);
-});
-
-burgerQueue.on("failed", (job, result) => {
-  console.log(`Job ${job.id} has failed with error: ${result.message}`);
-});
 
